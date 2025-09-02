@@ -17,4 +17,4 @@ link_libraries(${OPENGL_LIBRARIES} glfw)
 # add_executable(hello_window WIN32 src/hello_window.cpp ${GLAD_C})
 add_executable(hello_window src/hello_window.cpp ${GLAD_C})
 add_executable(hello_triangle src/hello_triangle.cpp ${GLAD_C})
-
+add_executable(hello_triangle1 src/hello_triangle1.cpp ${GLAD_C})

@@ -20,3 +20,5 @@ add_executable(hello_triangle src/hello_triangle.cpp ${GLAD_C})
 add_executable(hello_triangle1 src/hello_triangle1.cpp ${GLAD_C})
 add_executable(hello_shaders src/hello_shaders.cpp ${GLAD_C})
 add_executable(hello_shaders1 src/hello_shaders1.cpp ${GLAD_C})
+add_executable(exercise_triangle src/exercise_triangle.cpp ${GLAD_C})
+

@@ -14,10 +14,7 @@ add_subdirectory(glfw)
 
 link_libraries(${OPENGL_LIBRARIES} glfw)
 
-set(
-    hello_window
-    src/hello_window.cpp
-)
-
-add_executable(hello_window WIN32 ${hello_window} ${GLAD_C})
+# add_executable(hello_window WIN32 src/hello_window.cpp ${GLAD_C})
+add_executable(hello_window src/hello_window.cpp ${GLAD_C})
+add_executable(hello_triangle src/hello_triangle.cpp ${GLAD_C})
 

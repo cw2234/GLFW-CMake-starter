@@ -25,4 +25,4 @@ add_executable(hello_shaders src/hello_shaders.cpp ${LIB_FILES})
 add_executable(hello_shaders1 src/hello_shaders1.cpp ${LIB_FILES})
 add_executable(exercise_triangle src/exercise_triangle.cpp ${LIB_FILES})
 add_executable(hello_texture src/hello_texture.cpp ${LIB_FILES})
-
+add_executable(translation src/translation.cpp ${LIB_FILES})

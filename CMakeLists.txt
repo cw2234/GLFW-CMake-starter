@@ -9,17 +9,20 @@ include_directories("include")
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW lib only")
 set(GLFW_INSTALL OFF CACHE BOOL "GLFW lib only")
-set(GLAD_C "src/glad.c")
+set(
+LIB_FILES 
+src/glad.c 
+src/stb_image.cpp)
 add_subdirectory(glfw)
 
 link_libraries(${OPENGL_LIBRARIES} glfw)
 
 # add_executable(hello_window WIN32 src/hello_window.cpp ${GLAD_C})
-add_executable(hello_window src/hello_window.cpp ${GLAD_C})
-add_executable(hello_triangle src/hello_triangle.cpp ${GLAD_C})
-add_executable(hello_triangle1 src/hello_triangle1.cpp ${GLAD_C})
-add_executable(hello_shaders src/hello_shaders.cpp ${GLAD_C})
-add_executable(hello_shaders1 src/hello_shaders1.cpp ${GLAD_C})
-add_executable(exercise_triangle src/exercise_triangle.cpp ${GLAD_C})
-add_executable(hello_texture src/hello_texture.cpp ${GLAD_C})
+add_executable(hello_window src/hello_window.cpp ${LIB_FILES})
+add_executable(hello_triangle src/hello_triangle.cpp ${LIB_FILES})
+add_executable(hello_triangle1 src/hello_triangle1.cpp ${LIB_FILES})
+add_executable(hello_shaders src/hello_shaders.cpp ${LIB_FILES})
+add_executable(hello_shaders1 src/hello_shaders1.cpp ${LIB_FILES})
+add_executable(exercise_triangle src/exercise_triangle.cpp ${LIB_FILES})
+add_executable(hello_texture src/hello_texture.cpp ${LIB_FILES})
 

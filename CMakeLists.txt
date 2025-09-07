@@ -32,4 +32,5 @@ add_executable(camera_class src/camera_class.cpp ${LIB_FILES})
 add_executable(color src/color.cpp ${LIB_FILES})
 add_executable(basic_lighting src/basic_lighting.cpp ${LIB_FILES})
 add_executable(materials src/materials.cpp ${LIB_FILES})
+add_executable(lighting_maps src/lighting_maps.cpp ${LIB_FILES})
 

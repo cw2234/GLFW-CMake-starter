@@ -3,7 +3,6 @@
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
-    sampler2D emission;
     float shininess;
 };
 
@@ -13,6 +12,10 @@ struct Light {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
 };
 
 uniform Material material;
@@ -42,9 +45,14 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));  
 
-    vec3 emission = vec3(texture(material.emission, TexCoords));
+    float distance = length(light.position - FragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
-    vec3 result = ambient + diffuse + specular + emission;
+    ambient  *= attenuation; 
+    diffuse  *= attenuation;
+    specular *= attenuation;
+
+    vec3 result = ambient + diffuse + specular;
     FragColor = vec4(result, 1.0);
 }
 

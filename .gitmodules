@@ -1,3 +1,6 @@
 [submodule "glfw"]
 	path = glfw
 	url = git@github.com:glfw/glfw.git
+[submodule "assimp"]
+	path = assimp
+	url = git@github.com:assimp/assimp.git

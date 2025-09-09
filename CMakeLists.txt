@@ -10,6 +10,11 @@ include_directories("include")
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW lib only")
 set(GLFW_INSTALL OFF CACHE BOOL "GLFW lib only")
 
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "")
+set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "")
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "")
+set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+
 add_library(MY_LIB src/lib/glad.c src/lib/stb_image.cpp)
 # set(
 # LIB_FILES 
@@ -17,7 +22,10 @@ add_library(MY_LIB src/lib/glad.c src/lib/stb_image.cpp)
 # src/lib/stb_image.cpp)
 add_subdirectory(glfw)
 
+add_subdirectory(assimp)
+
 link_libraries(${OPENGL_LIBRARIES} glfw MY_LIB)
+link_libraries(assimp)
 
 
 file(GLOB CPP_FILES "src/*.cpp")

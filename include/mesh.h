@@ -80,7 +80,7 @@ public:
                 number = std::to_string(heightNr++);
             }
 
-            shader.setInt("material." + name + number, i);
+            shader.setInt(name + number, i);
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
 

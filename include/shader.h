@@ -17,16 +17,19 @@ public:
     unsigned int ID;
 
     // 构造器读取并构建着色器
-    Shader(const char *vertexPath, const char *fragmentPath)
+    Shader(const char *vertexPath, const char *fragmentPath, const char *geometryPath = nullptr)
     {
         // 构造器读取并构建着色器
         std::string vertexCode;
         std::string fragmentCode;
+        std::string geometryCode;
         std::ifstream vShaderFile;
         std::ifstream fShaderFile;
+        std::ifstream gShaderFile;
 
         vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
         try
         {
@@ -43,6 +46,16 @@ public:
 
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
+
+            // if geometry shader path is present, also load a geometry shader
+            if (geometryPath != nullptr)
+            {
+                gShaderFile.open(geometryPath);
+                std::stringstream gShaderStream;
+                gShaderStream << gShaderFile.rdbuf();
+                gShaderFile.close();
+                geometryCode = gShaderStream.str();
+            }
         }
         catch (std::ifstream::failure e)
         {
@@ -54,8 +67,6 @@ public:
 
         unsigned int vertex;
         unsigned int fragment;
-        int success;
-        char infoLog[512];
 
         vertex = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex, 1, &vShaderCode, NULL);
@@ -67,14 +78,34 @@ public:
         glCompileShader(fragment);
         this->checkCompileErrors(fragment, "FRAGMENT");
 
+        // if geometry shader is given, compile geometry shader
+        unsigned int geometry;
+        if (geometryPath != nullptr)
+        {
+            const char *gShaderCode = geometryCode.c_str();
+            geometry = glCreateShader(GL_GEOMETRY_SHADER);
+            glShaderSource(geometry, 1, &gShaderCode, NULL);
+            glCompileShader(geometry);
+            checkCompileErrors(geometry, "GEOMETRY");
+        }
+
         this->ID = glCreateProgram();
         glAttachShader(this->ID, vertex);
         glAttachShader(this->ID, fragment);
+        if (geometryPath != nullptr)
+        {
+            glAttachShader(this->ID, geometry);
+        }
+
         glLinkProgram(this->ID);
         this->checkCompileErrors(this->ID, "PROGRAM");
 
         glDeleteShader(vertex);
         glDeleteShader(fragment);
+        if (geometryPath != nullptr)
+        {
+            glDeleteShader(geometry);
+        }
     }
     // 使用/激活程序
     void use()
@@ -130,9 +161,6 @@ public:
     {
         glUniformMatrix4fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
     }
-  
-
-    
 
 private:
     void checkCompileErrors(unsigned int shader, std::string type)

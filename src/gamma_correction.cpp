@@ -21,14 +21,14 @@ void processInput(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-unsigned int loadTexture(const char *path);
+unsigned int loadTexture(const char *path, bool gammaCorrection);
 unsigned int loadCubemap(std::vector<std::string> faces);
 
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-bool blinn = false;
-bool blinnKeyPressed = false;
+bool gammaEnabled = false;
+bool gammaKeyPressed = false;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
@@ -50,6 +50,20 @@ float planeVertices[] = {
          10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
     };
 
+// lighting info
+// -------------
+glm::vec3 lightPositions[] = {
+    glm::vec3(-3.0f, 0.0f, 0.0f),
+    glm::vec3(-1.0f, 0.0f, 0.0f),
+    glm::vec3 (1.0f, 0.0f, 0.0f),
+    glm::vec3 (3.0f, 0.0f, 0.0f)
+};
+glm::vec3 lightColors[] = {
+    glm::vec3(0.25),
+    glm::vec3(0.50),
+    glm::vec3(0.75),
+    glm::vec3(1.00)
+};
 int main(void)
 {
 
@@ -87,7 +101,7 @@ int main(void)
     // stbi_set_flip_vertically_on_load(true);
 
     // shader
-    Shader shader("shaders/advanced_lighting/blend.vs", "shaders/advanced_lighting/blend.fs");
+    Shader shader("shaders/gamma_correction/blend.vs", "shaders/gamma_correction/blend.fs");
     // box
     unsigned int planeVAO;
     unsigned int planeVBO;
@@ -104,8 +118,8 @@ int main(void)
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
     glBindVertexArray(0);
 
-    
-    unsigned int floorTexture = loadTexture("images/wood.png");
+    unsigned int floorTexture = loadTexture("images/wood.png", false);
+    unsigned int floorTextureGammaCorrected = loadTexture("images/wood.png", true);
 
     shader.use();
     shader.setInt("texture1", 0);
@@ -133,14 +147,15 @@ int main(void)
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
 
+        glUniform3fv(glGetUniformLocation(shader.ID, "lightPositions"), 4, &lightPositions[0][0]);
+        glUniform3fv(glGetUniformLocation(shader.ID, "lightColors"), 4, &lightColors[0][0]);
         shader.setVec3("viewPos", camera.Position);
-        shader.setVec3("lightPos", lightPos);
-        shader.setInt("blinn", blinn);
+        shader.setInt("gamma", gammaEnabled);
 
         // cubes
         glBindVertexArray(planeVAO);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        glBindTexture(GL_TEXTURE_2D, gammaEnabled ? floorTextureGammaCorrected : floorTexture);
 
         
         model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
@@ -148,7 +163,7 @@ int main(void)
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
-        std::cout << (blinn ? "Blinn-Phong" : "Phong") << std::endl;
+        std::cout << (gammaEnabled ? "Gamma enabled" : "Gamma disabled") << std::endl;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -208,19 +223,18 @@ void processInput(GLFWwindow *window)
     {
         camera.ProcessKeyboard(RIGHT, deltaTime);
     }
-
-    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !blinnKeyPressed) 
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !gammaKeyPressed)
     {
-        blinn = !blinn;
-        blinnKeyPressed = true;
+        gammaEnabled = !gammaEnabled;
+        gammaKeyPressed = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE) 
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
     {
-        blinnKeyPressed = false;
+        gammaKeyPressed = false;
     }
 }
 
-unsigned int loadTexture(const char *path)
+unsigned int loadTexture(const char *path, bool gammaCorrection)
 {
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -229,20 +243,30 @@ unsigned int loadTexture(const char *path)
     unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
+        GLenum internalFormat;
+        GLenum dataFormat;
         if (nrComponents == 1)
-            format = GL_RED;
+        {
+            internalFormat = GL_RED;
+            dataFormat = GL_RED;
+        }
         else if (nrComponents == 3)
-            format = GL_RGB;
+        {
+            internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
+            dataFormat = GL_RGB;
+        }
         else if (nrComponents == 4)
-            format = GL_RGBA;
+        {
+            internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
+            dataFormat = GL_RGBA;
+        }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }

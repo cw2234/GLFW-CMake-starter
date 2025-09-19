@@ -24,7 +24,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 unsigned int loadTexture(const char *path, bool gammaCorrection);
 unsigned int loadCubemap(std::vector<std::string> faces);
 void renderScene(const Shader &shader);
-void renderCube();
+void renderWall();
 void renderQuad();
 
 const unsigned int SCR_WIDTH = 800;
@@ -228,25 +228,25 @@ void renderScene(const Shader &shader)
     model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
     model = glm::scale(model, glm::vec3(0.5f));
     shader.setMat4("model", model);
-    renderCube();
+    renderWall();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
     model = glm::scale(model, glm::vec3(0.5f));
     shader.setMat4("model", model);
-    renderCube();
+    renderWall();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
     model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
     model = glm::scale(model, glm::vec3(0.25));
     shader.setMat4("model", model);
-    renderCube();
+    renderWall();
 }
 
 // renderCube() renders a 1x1 3D cube in NDC.
 // -------------------------------------------------
 unsigned int cubeVAO = 0;
 unsigned int cubeVBO = 0;
-void renderCube()
+void renderWall()
 {
     // initialize (if necessary)
     if (cubeVAO == 0)
